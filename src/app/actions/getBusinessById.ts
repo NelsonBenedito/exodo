@@ -6,22 +6,13 @@ import { Prisma } from "@/generated/prisma";
 type BusinessWithImage = Prisma.BusinessGetPayload<{
   include: { image: true };
 }>;
-export default async function getBusiness(): Promise<{
-  business?: BusinessWithImage[];
+async function getBusiness(id: any): Promise<{
+  business?: BusinessWithImage | null;
   error?: string;
 }> {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return { error: "User not found" };
-  }
-
   try {
-    const business = await db.business.findMany({
-      where: { userId },
-      orderBy: {
-        createdAt: "desc",
-      },
+    const business = await db.business.findFirst({
+      where: { id },
       include: { image: true },
     });
 
@@ -30,3 +21,5 @@ export default async function getBusiness(): Promise<{
     return { error: "Database error" };
   }
 }
+
+export default getBusiness;

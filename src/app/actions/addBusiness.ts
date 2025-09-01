@@ -1,57 +1,69 @@
 "use server";
-import { auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { useAuth } from "@clerk/nextjs";
 
-interface BusinessData {
-  title: string;
-  description: string;
-  startAt: any;
-  endAt: any;
-  imageUrl: any;
-}
 interface BusinessResult {
-  data?: BusinessData;
+  data?: any;
   error?: string;
 }
 
 async function addBusiness(formData: FormData): Promise<BusinessResult> {
-  const titleValue = formData.get("title");
-  const descriptionValue = formData.get("description");
-  const startDateValue = formData.get("initial-time-picker");
-  const endAtDateValue = formData.get("end-time-picker");
-  const imageUrlValue = formData.get("businessImage");
-  if (!titleValue || titleValue === "" || !descriptionValue) {
-    return { error: "Falta um titulo ou uma descrição" };
-  }
-  const title: string = titleValue.toString();
-  const description: string = descriptionValue.toString();
-  const startAt: any = startDateValue?.toString();
-  const endAt: any = endAtDateValue?.toString();
-  const imageUrl: any = imageUrlValue?.toString();
-  const { userId } = await auth();
+  const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
+  const startDateValue = formData.get("startDate") as string | null;
+  const endDateValue = formData.get("endDate") as string | null;
+  const startTimeValue = formData.get("startTime") as string | null;
+  const endTimeValue = formData.get("endTime") as string | null;
+  const imageUrl = formData.get("businessImageUrl") as string | null;
 
-  if (!userId) {
-    return { error: "Usuário não encontrado" };
+  const startDateTime =
+    startDateValue && startTimeValue
+      ? new Date(`${startDateValue}T${startTimeValue}`)
+      : undefined;
+
+  const endDateTime =
+    endDateValue && endTimeValue
+      ? new Date(`${endDateValue}T${endTimeValue}`)
+      : undefined;
+
+  if (!title?.trim() || !description?.trim()) {
+    return { error: "Falta título ou descrição" };
   }
+
+  const user = await currentUser();
+  if (!user) return { error: "Usuário não autenticado" };
 
   try {
-    const businessData: BusinessData = await db.business.create({
+    let imageRecord = null;
+    if (imageUrl) {
+      imageRecord = await db.image.create({
+        data: {
+          filename: title.trim(),
+          imageUrl,
+        },
+      });
+    }
+
+    const business = await db.business.create({
       data: {
-        title,
-        description,
-        startAt,
-        endAt,
-        userId,
-        imageUrl,
+        title: title.trim(),
+        description: description.trim(),
+        startAt: startDateTime,
+        endAt: endDateTime,
+        userId: user?.id,
+        imageId: imageRecord?.id || null,
       },
+      include: { image: true },
     });
 
     revalidatePath("/");
-
-    return { data: businessData };
-  } catch (error) {
-    return { error: "Evento não adicionado" };
+    return { data: business };
+  } catch (err) {
+    console.error(err);
+    return { error: "Erro ao criar evento" };
   }
 }
+
 export default addBusiness;

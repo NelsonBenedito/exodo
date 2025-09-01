@@ -1,6 +1,5 @@
 import BusinessSection from "@/components/businessSection";
-import CreateBusiness from "@/components/createBusiness";
-import { DialogBusiness } from "@/components/dialogBusiness";
+import DialogBusiness from "@/components/dialogBusiness";
 
 export default function Business() {
   return (

@@ -25,7 +25,7 @@ export default function Home() {
             alt="Pastores da ibrejetibá"
           />
         </section>
-        <section className="flex flex-col h-screen justify-center" id="events">
+        <section className="flex w-full gap-5 flex-col h-screen justify-center" id="events">
           <BusinessSection />
         </section>
         <section className="flex flex-col h-screen justify-center" id="about">

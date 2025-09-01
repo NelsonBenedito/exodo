@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "@/components/ui/button";
+
 import {
   Dialog,
   DialogClose,
@@ -10,30 +10,67 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import addBusiness from "@/app/actions/addBusiness";
 import { DatePicker } from "./datePicker";
 import { Checkbox } from "./ui/checkbox";
-import addBusiness from "@/app/actions/addBusiness";
-import { toast } from "sonner";
-import InputImage from "./inputImage";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-export function DialogBusiness() {
-  const clientAction = async (formData: FormData) => {
-    const { data, error } = await addBusiness(formData);
+import { toast } from "sonner";
+import { useState } from "react";
+import { useFormStatus } from "react-dom";
+import ProgressBar from "./progressBar";
+import InputIcon from "./inputIcon";
+export default function NewBusinessForm() {
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { pending } = useFormStatus();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-    if (error) {
-      toast.error(error);
-      console.log(error);
-    } else {
-      toast.success("Evento adicionado.");
-      console.log(data);
+    try {
+      let imageUrl = "";
+
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/files", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          console.error("não foi possivel enviar imagem");
+        }
+        const data = await res.json();
+        imageUrl = data;
+      }
+
+      const formData = new FormData(e.target as HTMLFormElement);
+      formData.append("businessImageUrl", imageUrl);
+
+      const result = await addBusiness(formData);
+
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Evento adicionado com sucesso!");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao criar evento");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Adicionar Evento</Button>
+        <Button variant="default">Adicionar Evento</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[425px]">
@@ -44,8 +81,7 @@ export function DialogBusiness() {
             tudo pronto.
           </DialogDescription>
         </DialogHeader>
-
-        <form action={clientAction}>
+        <form onSubmit={handleSubmit}>
           <ScrollArea className="w-full h-96 rounded-md border ">
             <div className="grid gap-4 p-4">
               <div className="grid gap-3">
@@ -70,11 +106,11 @@ export function DialogBusiness() {
                     Início
                   </Label>
                   <span className="flex gap-1">
-                    <DatePicker />
+                    <DatePicker name="startDate" />
                     <Input
                       type="time"
                       id="initial-time-picker"
-                      name="initial-time-picker"
+                      name="startTime"
                       step="1"
                       defaultValue="10:30:00"
                       className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
@@ -84,11 +120,11 @@ export function DialogBusiness() {
                     Término
                   </Label>
                   <span className="flex gap-1">
-                    <DatePicker />
+                    <DatePicker name="endDate" />
                     <Input
                       type="time"
                       id="end-time-picker"
-                      name="end-time-picker"
+                      name="endTime"
                       step="2"
                       defaultValue="10:30:00"
                       className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
@@ -98,7 +134,20 @@ export function DialogBusiness() {
                     <Label htmlFor="businessImage">
                       Insira a imagem do evento
                     </Label>
-                    <InputImage />
+                    {/* <InputImage type="file" name="imageBusiness"/> */}
+                    <Input
+                      type="file"
+                      name="businessImage"
+                      id="businessImage"
+                      onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    />
+                  </span>
+                  <span className="grid gap-3">
+                    <Label htmlFor="price">
+                      Valor do ingresso
+                    </Label>
+
+                    <InputIcon icon="currency"/>
                   </span>
                   <span className="flex pt-3">
                     <Label
@@ -128,7 +177,9 @@ export function DialogBusiness() {
             <DialogClose asChild>
               <Button variant="outline">Cancelar</Button>
             </DialogClose>
-            <Button type="submit">Salvar</Button>
+            <Button disabled={loading} type="submit">
+              {loading ? "Enviando..." : "Salvar"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -9,7 +9,7 @@ import {
 import React from "react";
 import EventCard from "@/components/card";
 import getBusiness from "@/app/actions/getBusiness";
-import { Business } from "@/generated/prisma";
+
 export default async function CarouselMultiple() {
   const { business } = await getBusiness();
   return (
@@ -21,12 +21,12 @@ export default async function CarouselMultiple() {
     >
       <CarouselContent>
         {business &&
-          business.map((business: Business) => (
+          business.map((item) => (
             <CarouselItem
-              key={business.id}
+              key={item.id}
               className="md:basis-1/2 lg:basis-1/4"
             >
-              <EventCard title={business.title} description={business.description} imageUrl={business.imageUrl}/>
+              <EventCard title={item.title} description={item.description} imageUrl={item.image?.imageUrl ?? ""} id={item.id}/>
             </CarouselItem>
           ))}
       </CarouselContent>

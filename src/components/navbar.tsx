@@ -66,11 +66,20 @@ export default async function Navbar() {
             <PopoverContent align="start" className="w-36 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => (
-                    <NavigationMenuItem key={index} className="w-full">
-                      <Link href={link.href} />
-                    </NavigationMenuItem>
-                  ))}
+                  {navigationLinks.map((link, index) => {
+                    return (
+                      <NavigationMenuItem key={index}>
+                        <NavigationMenuLink
+                          href={link.href}
+                          className={cn(
+                            "text-muted-foreground hover:text-primary py-1.5 font-medium"
+                          )}
+                        >
+                          {link.label}
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    );
+                  })}
                 </NavigationMenuList>
               </NavigationMenu>
             </PopoverContent>
@@ -102,7 +111,10 @@ export default async function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-2">
           <SignedIn>
-            <Link href='/business' className="font-bold rounded-lg bg-[#1f1f1f] py-1 px-2 text-[#f1f1f1] cursor-pointer hover:bg-[#313131]">
+            <Link
+              href="/business"
+              className="font-bold rounded-lg bg-[#1f1f1f] py-1 px-2 text-[#f1f1f1] cursor-pointer hover:bg-[#313131]"
+            >
               Eventos
             </Link>
             <UserButton />

@@ -1,12 +1,10 @@
 "use client";
-
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { ImageIcon, XCircleIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import Dropzone from "react-dropzone";
-
 const ImagePreview = ({
   url,
   onRemove,
@@ -30,10 +28,12 @@ const ImagePreview = ({
     />
   </div>
 );
-
-export default function InputImage() {
+export default function InputImage({
+  className,
+  type,
+  ...props
+}: React.ComponentProps<"input">) {
   const [businessPicture, setBusinessPicture] = useState<string | null>(null);
-
   return (
     <div className="w-full">
       <div className="mt-1 w-full">
@@ -76,8 +76,10 @@ export default function InputImage() {
               >
                 <input
                   {...getInputProps()}
-                  id="businessImage"
-                  name="businessImage"
+                  {...props}
+                  type={type}
+                  id="business"
+                  value={businessPicture?.length}
                 />
                 <ImageIcon className="h-16 w-16" strokeWidth={1.25} />
               </div>
