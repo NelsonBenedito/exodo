@@ -3,8 +3,8 @@ import ButtonIcon from "@/components/buttonIcon";
 import Countdown from "@/components/countDown";
 import NewJoinForm from "@/components/joinBusiness";
 import Image from "next/image";
-export default async function Business({ params }: { params: { id: string } }) {
-  const { id } = await params;
+
+export default async function Business(id: any) {
   const { business } = await getBusinessBtId(id);
   const businesImage: any = business?.image?.imageUrl;
   if (!business) {
